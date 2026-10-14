@@ -1,0 +1,36 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Variables d'environnement : jamais dans Git, seul le modèle est suivi
+.env
+.env.*
+!.env.example
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Mémoire de travail de Claude Code : local seulement, jamais partagé
+CLAUDE.md
+
+# Documents internes : jamais dans le dépôt public (voir
+# scripts/exporter-depot-public.sh, qui les écarte aussi)
+BASCULE_PROD.md

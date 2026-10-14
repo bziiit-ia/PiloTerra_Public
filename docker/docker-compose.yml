@@ -1,0 +1,36 @@
+# PiloTerra — test local de l'image de préproduction
+#
+# Depuis la racine du dépôt :
+#   VITE_SUPABASE_ANON_KEY=<clé anon de supabase.piloterra.me> \
+#     docker compose -f docker/docker-compose.yml up --build
+# puis ouvrir http://localhost:8080
+#
+# L'application locale parle au Supabase de préproduction et aux copies
+# « dev- » des workflows n8n : les comptes et les écritures sont ceux de
+# supabase.piloterra.me.
+#
+# Ce fichier sert à reproduire en local exactement ce que Dokploy
+# construira. Pour Dokploy, la méthode recommandée est le type
+# « Application » avec build Dockerfile (voir docker/README.md), pas ce
+# compose.
+
+services:
+  piloterra-preprod:
+    build:
+      # Contexte = racine du dépôt (ce fichier est dans docker/)
+      context: ..
+      dockerfile: docker/Dockerfile
+      args:
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL:-https://supabase.piloterra.me}
+        VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY:?VITE_SUPABASE_ANON_KEY manquante - clé anon du Supabase de préproduction}
+        VITE_N8N_ENVIRONNEMENT: ${VITE_N8N_ENVIRONNEMENT:-dev}
+        SITE_URL: ${SITE_URL:-https://piloterra.me}
+        STOCKAGE_SUPABASE: ${STOCKAGE_SUPABASE:-prod}
+        ANALYTICS: ${ANALYTICS:-0}
+        EXIGER_SEO: ${EXIGER_SEO:-0}
+    image: piloterra:preprod
+    environment:
+      X_ROBOTS_TAG: "noindex, nofollow"
+    ports:
+      - "8080:8080"
+    restart: unless-stopped

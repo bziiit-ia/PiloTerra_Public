@@ -1,0 +1,34 @@
+# PiloTerra — fichiers exclus du contexte de build
+#
+# Placé à côté du Dockerfile sous le nom Dockerfile.dockerignore : BuildKit
+# (le moteur par défaut de Docker depuis la version 23) le lit à la place
+# d'un .dockerignore racine. Cela évite d'ajouter un fichier à la racine
+# d'un dépôt connecté à Google AI Studio.
+
+# Dépendances et builds locaux : reconstruits dans l'image
+node_modules
+dist
+dist-ssr
+
+# Secrets : aucun fichier d'environnement local n'est utile au build
+.env
+.env.*
+*.local
+
+# Historique git et CI
+.git
+.github
+
+# Fichiers sans rôle dans l'application servie
+sql
+*.md
+*.log
+.vscode
+.idea
+.DS_Store
+
+# Le dossier docker/ lui-même, sauf ce que le build utilise : le gabarit
+# Nginx et le script d'adaptation à la préproduction
+docker/*
+!docker/nginx
+!docker/scripts
