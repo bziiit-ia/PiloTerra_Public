@@ -99,7 +99,9 @@ Soyons clairs pour qui voudrait installer sa propre instance :
 ### Prérequis
 
 - [Node.js](https://nodejs.org/) 22 (20.19 au minimum, exigé par Vite 7)
-- un projet Supabase et une instance n8n (voir ci-dessus)
+- un projet Supabase et une instance n8n (voir ci-dessus), ou
+  [Docker](https://docs.docker.com/get-docker/) avec Compose pour les faire
+  tourner sur votre poste (voir « Pile locale »)
 
 ### Installation
 
@@ -114,10 +116,11 @@ Le fichier `package-lock.json` est incomplet : `npm ci` le refuse, utilisez
 
 ### Configuration
 
-Copiez le modèle `.env.example` en `.env.local`, puis renseignez-le :
+Copiez le modèle `.env.example` en `.env`, puis renseignez-le. Tel quel,
+il vise la pile locale :
 
 ```bash
-cp .env.example .env.local
+cp .env.example .env
 ```
 
 | Variable | Valeur |
@@ -125,14 +128,55 @@ cp .env.example .env.local
 | `VITE_SUPABASE_URL` | Adresse de votre projet Supabase |
 | `VITE_SUPABASE_ANON_KEY` | Clé **anon** (publique) de ce projet. Jamais la clé `service_role` |
 | `VITE_N8N_ENVIRONNEMENT` | `dev` (scénarios préfixés `dev-`) ou `prod` |
+| `VITE_N8N_URL` | Facultative : adresse de votre instance n8n (défaut : celle de bziiit) |
 
-Sans ces trois variables, le portail refuse de démarrer : c'est voulu, pour
-ne jamais se connecter par erreur à une autre base.
+Sans les trois premières variables, le portail refuse de démarrer : c'est
+voulu, pour ne jamais se connecter par erreur à une autre base.
+
+L'identifiant Google Analytics (`analytics.ts`, `index.html`) et les
+adresses des images et documents sont propres à bziiit : remplacez-les par
+les vôtres.
+
+### Pile locale (Supabase + n8n)
+
+`docker-compose.yml` lance sur votre poste un Supabase (base, API,
+authentification, stockage, Studio) et une instance n8n, réglés par la
+seconde partie de `.env` :
+
+```bash
+docker compose up -d   # premier lancement : téléchargement des images
+npm run dev
+```
+
+| Adresse | Service |
+| :--- | :--- |
+| http://localhost:3000 | Portail (`npm run dev`) |
+| http://localhost:8000 | API Supabase, et Studio (`DASHBOARD_USERNAME` / `DASHBOARD_PASSWORD`) |
+| http://localhost:5678 | n8n (compte propriétaire à créer à la première visite) |
+| `127.0.0.1:54322` | Postgres, utilisateur `postgres` |
+
+- **Base** : au démarrage, le service `migrations` applique les scripts de
+  `sql/` absents de la base, dans l'ordre de `sql/ordre.txt`, puis
+  s'arrête. Il ne rejoue jamais un script déjà passé. Repartir d'une base
+  vide : `docker compose down -v`, puis `docker compose up -d`.
+- **Comptes** : confirmés sans e-mail (pas de SMTP en local). Le premier
+  compte créé est un simple visiteur ; pour le passer super admin :
+  `update utilisateurs set role = 'super_admin' where email = '…';`
+  dans le Studio.
+- **Images** : variables `*_IMAGE` de `.env` ; par défaut, les versions du
+  Supabase de dev.
+- **n8n** : l'instance est vide. Importez-y les scénarios avec des chemins
+  préfixés `dev-` ; ils joignent Supabase à `http://kong:8000`, avec la clé
+  `SERVICE_ROLE_KEY`.
+- **Secrets** : ceux de `.env.example` sont publics. Pile réservée au poste
+  de développement, à ne jamais exposer.
 
 ### Base de données
 
-Sur un projet Supabase neuf, exécutez les scripts de `sql/` dans l'éditeur
-SQL, chacun en une fois, dans cet ordre :
+La pile locale applique les scripts de `sql/` toute seule. Sur un projet
+Supabase neuf hébergé ailleurs, exécutez-les dans l'éditeur SQL, chacun en
+une fois, dans cet ordre (celui de `sql/ordre.txt`, à compléter à chaque
+nouveau script) :
 
 | # | Script | Objet |
 | :--- | :--- | :--- |
@@ -161,10 +205,6 @@ Deux réglages restent à faire à la main : le trigger qui prévient n8n d'une
 inscription (exemple en tête de `etape0_schema_initial.sql`) et les textes
 propres à chaque marché (consigne de veille, couleurs), à reprendre dans la
 console super admin.
-
-Les adresses n8n (`n8nConfig.ts`), l'identifiant Google Analytics
-(`analytics.ts`, `index.html`) et les adresses des images et documents
-sont propres à bziiit : remplacez-les par les vôtres.
 
 ### Commandes
 
