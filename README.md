@@ -77,7 +77,7 @@ pages de référencement.
 ├── supabaseClient.ts       # Connexion Supabase (variables d'environnement)
 ├── n8nConfig.ts            # Adresses des scénarios n8n
 ├── seo-plugin.mjs          # Génération SEO au build
-├── sql/                    # Migrations SQL, à exécuter dans l'ordre
+├── sql/                    # Schéma et migrations SQL (ordre : voir Base de données)
 ├── docker/                 # Dockerfile, Nginx, script de contrôle du build
 └── public/                 # Icônes, robots.txt
 ```
@@ -86,8 +86,6 @@ pages de référencement.
 
 Soyons clairs pour qui voudrait installer sa propre instance :
 
-- **le schéma initial de la base** : `sql/` ne contient que les migrations
-  récentes, pas la création des tables d'origine ;
 - **les scénarios n8n** : les traitements d'IA (agents, prompts des
   scénarios) vivent dans n8n et ne sont pas publiés ici. Sans eux, les
   modules qui en dépendent ne répondent pas ;
@@ -130,6 +128,39 @@ cp .env.example .env.local
 
 Sans ces trois variables, le portail refuse de démarrer : c'est voulu, pour
 ne jamais se connecter par erreur à une autre base.
+
+### Base de données
+
+Sur un projet Supabase neuf, exécutez les scripts de `sql/` dans l'éditeur
+SQL, chacun en une fois, dans cet ordre :
+
+| # | Script | Objet |
+| :--- | :--- | :--- |
+| 1 | `etape0_schema_initial.sql` | Schéma d'origine : tables, fonctions, RLS, buckets de stockage. Base vierge uniquement |
+| 2 | `etape1a3_socle_multi_marche.sql` | Référentiels marchés et filières, colonnes de marché |
+| 3 | `etape4_qualification_marche.sql` | Console de qualification des contenus |
+| 4 | `etape5a_socle_points_entree.sql` | Règle du marché effectif |
+| 5 | `etape5c_organisations.sql` | Marché et filière des organisations |
+| 6 | `etape5d_profils_par_marche.sql` | Profils proposés selon le marché |
+| 7 | `securite_rls_utilisateurs_invitations_diagnostics.sql` | Fermeture des politiques RLS trop larges |
+| 8 | `correctif_sessions_invitations.sql` | Sessions de formation et invitations |
+| 9 | `etape6_vitrine_tri_marche.sql` | Vitrine par marché |
+| 10 | `etape7_veille_par_marche.sql` | Sources de veille par marché |
+| 11 | `etape8_seo_tri_marche.sql` | Pages SEO par marché |
+| 12 | `etape9_redaction_seo_multi_marche.sql` | Rédaction SEO multi-marché |
+| 13 | `etape10_accent_visuel_marche.sql` | Couleurs par marché |
+| 14 | `etape10_questions_maturite_tri_marche.sql` | Diagnostic de maturité par marché |
+| 15 | `etape10_reporting_marches.sql` | Reporting par marché |
+
+Sauf le premier, les scripts sont idempotents : les rejouer ne casse rien.
+Le schéma initial comporte des politiques RLS d'origine trop larges, que
+les scripts n° 5 et 7 remplacent : n'ouvrez pas la base au public avant
+d'avoir tout exécuté.
+
+Deux réglages restent à faire à la main : le trigger qui prévient n8n d'une
+inscription (exemple en tête de `etape0_schema_initial.sql`) et les textes
+propres à chaque marché (consigne de veille, couleurs), à reprendre dans la
+console super admin.
 
 Les adresses n8n (`n8nConfig.ts`), l'identifiant Google Analytics
 (`analytics.ts`, `index.html`) et les adresses des images et documents

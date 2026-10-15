@@ -1,0 +1,17 @@
+# Ordre d'exécution des scripts SQL, un fichier par ligne.
+# Lu par docker/supabase/appliquer-sql.sh (pile locale) ; voir aussi le README.
+etape0_schema_initial.sql
+etape1a3_socle_multi_marche.sql
+etape4_qualification_marche.sql
+etape5a_socle_points_entree.sql
+etape5c_organisations.sql
+etape5d_profils_par_marche.sql
+securite_rls_utilisateurs_invitations_diagnostics.sql
+correctif_sessions_invitations.sql
+etape6_vitrine_tri_marche.sql
+etape7_veille_par_marche.sql
+etape8_seo_tri_marche.sql
+etape9_redaction_seo_multi_marche.sql
+etape10_accent_visuel_marche.sql
+etape10_questions_maturite_tri_marche.sql
+etape10_reporting_marches.sql

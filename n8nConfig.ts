@@ -17,7 +17,9 @@
 //  dev (404) : c'est voulu, rien ne part en prod.
 // =====================================================================
 
-const N8N_BASE = 'https://n8n.bziiit.com';
+// VITE_N8N_URL : autre instance n8n, par exemple celle de la pile locale
+// (docker-compose.yml). Absente : l'instance de bziiit.
+const N8N_BASE = (import.meta.env.VITE_N8N_URL?.trim() || 'https://n8n.bziiit.com').replace(/\/+$/, '');
 
 const environnement = import.meta.env.VITE_N8N_ENVIRONNEMENT?.trim();
 
